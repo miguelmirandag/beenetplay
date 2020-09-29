@@ -9,6 +9,7 @@ use Cookie;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Exception\RequestException;
+use DateTime;
 
 class LoginController extends Controller
 {
@@ -42,9 +43,18 @@ class LoginController extends Controller
         
         //Validacion de campos de Form Login 
         $credenciales = $this->validate(request(),[
-            'email' => 'email|required|string',
+            'username' => 'required|string',
             'password' => 'required|string'
         ]);
+
+        $fecha = new DateTime();
+        $secret_key = '1234567890123456';
+        $data = "username=".request()->username.";password=".request()->password.";appid=1;boxid=123456789;timestamp=".$fecha->getTimestamp();
+        
+        //dd($data);
+        //$encrypted = encrypt($data,$secret_key);
+        $decrypted = decrypt('eyJpdiI6IlJwa3o1QmVhTU9yWkdIK3BmOURhWXc9PSIsInZhbHVlIjoieXJ2UVV5WEJkNlU0bk1MZnBFMTlpKytvbCt6VlduZGFzNHJ6NGFNemduUWNQUW1pbmRFRzZvTUxmYWRkTmZIc3cwTFpONWhoSTU1QWI4WE4zTjVnWW5wU0FwanU3M0ZiUGRNRWZqS2wwREs0TTZhb29VOFY0YlVqMVlCZTZNOU0iLCJtYWMiOiI3NDRlNmIyYjE5ZjViMDg4ZWI2Y2Y5MWU5OWFjMmFhOTdlMTFmZjk1MjI0MzFhOWMxM2FiMmU4Y2JkNmU2YzVkIn0=',$secret_key);
+        dd($decrypted);
 
         //Llamado a API       
         $client = new Client([
@@ -96,5 +106,41 @@ class LoginController extends Controller
         alert()->info('Sesion Cerrada Exitosamente', 'Sesion Terminada');
         //Redirige a Login
         return redirect('/');
+    }
+
+    public function encrypt($data,$encryption_key){
+        
+        $key = hex2bin($encryption_key);
+        $nonceSize = openssl_cipher_iv_length('aes-128-cbc');
+        $nonce = openssl_random_pseudo_bytes($nonceSize);
+
+        $ciphertext = openssl_encrypt(
+            $data,
+            'aes-128-cbc',
+            $key,
+            OPENSSL_RAW_DATA,
+            $nonce
+        );
+
+        return base64_encode($nonce.$ciphertext);
+
+    }
+
+    public function decrypt($data,$encryption_key){
+        $key = hex2bin($encryption_key);
+        $data = base64_decode($data);
+        $nonceSize = openssl_cipher_iv_length('aes-128-cbc');
+        $nonce = mb_substr($data, 0, $nonceSize, '8bit');
+        $ciphertext = mb_substr($data,$nonceSize,null,'8bit');
+
+        $plaintext = openssl_decrypt(
+            $ciphertext,
+            'aes-128-cbc',
+            $key,
+            OPENSSL_RAW_DATA,
+            $nonce
+        );
+
+        return $plaintext;
     }
 }

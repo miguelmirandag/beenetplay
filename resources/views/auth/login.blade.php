@@ -13,14 +13,14 @@
                     <!-- Formulario de Login -->
                     <form method="POST" action="{{ route('login') }}">
                         {{ csrf_field() }}
-                    <div class="form-group {{ $errors->has('email') ? 'has-error' : '' }}">
-                            <label for="email">Email</label>
+                    <div class="form-group {{ $errors->has('username') ? 'has-error' : '' }}">
+                            <label for="username">Username</label>
                             <input class="form-control" 
-                                    type="email" 
-                                    name="email" 
+                                    type="text" 
+                                    name="username" 
                                     placeholder="Ingresar Usuario">
                             {{-- $error muestra msj bajo input de form login segun validacion en metodo login --}}
-                            {!! $errors->first('email','<span class="help-block">:message</span>') !!}
+                            {!! $errors->first('username','<span class="help-block">:message</span>') !!}
                         </div>
                         <div class="form-group {{ $errors->has('password') ? 'has-error' : '' }}">
                             <label for="password">Password</label>
